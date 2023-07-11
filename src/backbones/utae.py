@@ -29,6 +29,7 @@ class UTAE(nn.Module):
         return_maps=False,
         pad_value=0,
         padding_mode="reflect",
+        positional_encoding=True,
     ):
         """
         U-TAE architecture for spatio-temporal encoding of satellite image time series.
@@ -125,6 +126,7 @@ class UTAE(nn.Module):
             mlp=[d_model, encoder_widths[-1]],
             return_att=True,
             d_k=d_k,
+            positional_encoding=positional_encoding
         )
         self.temporal_aggregator = Temporal_Aggregator(mode=agg_mode)
         self.out_conv = ConvBlock(nkernels=[decoder_widths[0]] + out_conv, padding_mode=padding_mode)
@@ -229,7 +231,7 @@ class ConvLayer(nn.Module):
         elif norm == "instance":
             nl = nn.InstanceNorm2d
         elif norm == "group":
-            nl = lambda num_feats: nn.GroupNorm(
+            def nl(num_feats): return nn.GroupNorm(
                 num_channels=num_feats,
                 num_groups=n_groups,
             )
